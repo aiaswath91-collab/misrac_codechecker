@@ -123,6 +123,17 @@ function App() {
     }
   };
 
+  if (!BACKEND_URL) {
+    return (
+      <div className="app-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', color: 'white' }}>
+        <div style={{ textAlign: 'center', padding: '2rem', background: 'rgba(0,0,0,0.5)', borderRadius: '1rem' }}>
+          <h2>Configuration Missing</h2>
+          <p>Please set <strong>REACT_APP_BACKEND_URL</strong> in your Vercel Environment Variables.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="app-container">
       <header className="app-header">
