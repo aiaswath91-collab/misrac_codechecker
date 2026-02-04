@@ -413,9 +413,10 @@
                 <td>
                     <strong>Violation:</strong> {{ v.message }}
                     {% if v.code %}<span class="code">{{ v.code }}</span>{% endif %}
-                    <p style="margin-top: 5px; font-size: 0.9em; color: #666;">
-                        <em>Correction Guidance:</em> Ensure compliance with {{ v.rule }} through explicit refactoring or adding necessary qualifiers.
-                    </p>
+                    <div style="margin-top: 10px; padding: 10px; background: #fdfdfd; border-left: 3px solid #27ae60; font-size: 0.9em;">
+                        <p style="color: #2c3e50; margin-bottom: 5px;"><strong>📜 MISRA Guideline:</strong> {{ v.description }}</p>
+                        <p style="color: #27ae60;"><strong>💡 Solving Suggestion:</strong> {{ v.solution }}</p>
+                    </div>
                 </td>
             </tr>
             {% endfor %}

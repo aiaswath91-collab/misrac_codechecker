@@ -65,14 +65,19 @@ class MISRAAnalyzer:
                             rule_id = parts[3].strip()
                             message = parts[4].strip()
                             
+                            misra_rule = self._map_to_misra_rule(rule_id)
+                            rule_data = self._get_rule_data(misra_rule)
+                            
                             relative_path = Path(file_path).relative_to(self.source_dir) if self.source_dir in Path(file_path).parents else Path(file_path).name
                             
                             violations.append({
                                 "file": str(relative_path),
                                 "line": int(line_num) if line_num.isdigit() else 0,
                                 "severity": self._map_severity(severity),
-                                "rule": self._map_to_misra_rule(rule_id),
+                                "rule": misra_rule,
                                 "message": message,
+                                "description": rule_data['desc'],
+                                "solution": rule_data['solution'],
                                 "tool": "cppcheck",
                                 "type": severity
                             })
@@ -121,14 +126,19 @@ class MISRAAnalyzer:
                                 severity = 'warning' if 'warning' in line else 'error'
                                 message = ':'.join(parts[3:]).strip()
                                 
+                                misra_rule = "MISRA C:2012 Rule 17.7"
+                                rule_data = self._get_rule_data(misra_rule)
+                                
                                 relative_path = Path(file_path).relative_to(self.source_dir) if self.source_dir in Path(file_path).parents else Path(file_path).name
                                 
                                 violations.append({
                                     "file": str(relative_path),
                                     "line": int(line_num) if line_num.isdigit() else 0,
                                     "severity": self._map_severity(severity),
-                                    "rule": "MISRA C:2012 Rule 17.7",
+                                    "rule": misra_rule,
                                     "message": message[:200],
+                                    "description": rule_data['desc'],
+                                    "solution": rule_data['solution'],
                                     "tool": "clang-tidy",
                                     "type": severity
                                 })
@@ -156,7 +166,72 @@ class MISRAAnalyzer:
             return 'Required'
         else:
             return 'Advisory'
-    
+
+    def _get_rule_data(self, rule_id: str) -> Dict:
+        """Get MISRA rule description and solution guidance"""
+        rule_info = {
+            'MISRA C:2012 Rule 2.1': {
+                'desc': 'A project shall not contain unreachable code.',
+                'solution': 'Remove the code that cannot be executed or refactor the logic (e.g., removing returns before code blocks).'
+            },
+            'MISRA C:2012 Rule 2.7': {
+                'desc': 'There shall be no unused parameters in functions.',
+                'solution': 'Remove the unused parameter from the function signature or use it if it was intended to be used.'
+            },
+            'MISRA C:2012 Rule 5.3': {
+                'desc': 'An identifier declared in an inner scope shall not hide an identifier declared in an outer scope.',
+                'solution': 'Rename the inner scope variable to avoid name clashing with the outer scope variable.'
+            },
+            'MISRA C:2012 Rule 8.7': {
+                'desc': 'Functions and objects should not be defined with external linkage if they are referenced only in one translation unit.',
+                'solution': 'Add the "static" keyword to the declaration to limit its scope to the current file.'
+            },
+            'MISRA C:2012 Rule 8.13': {
+                'desc': 'A pointer should point to a const-qualified type whenever possible.',
+                'solution': 'Add "const" to the pointer target type in function parameters if the target is not modified within the function.'
+            },
+            'MISRA C:2012 Rule 9.1': {
+                'desc': 'The value of an object with automatic storage duration shall not be read before it has been set.',
+                'solution': 'Initialize variables at the point of declaration or ensure they are assigned a value before being read.'
+            },
+            'MISRA C:2012 Rule 10.8': {
+                'desc': 'The value of a composite expression shall not be cast to a different essential type category or wider essential type.',
+                'solution': 'Cast individual operands to the necessary type before performing the operation to ensure explicit conversion behavior.'
+            },
+            'MISRA C:2012 Rule 11.3': {
+                'desc': 'A cast shall not be performed between a pointer to object type and a pointer to a different object type.',
+                'solution': 'Avoid pointer type punning. Use unions or explicit byte-wise copying if bit-level manipulation is required.'
+            },
+            'MISRA C:2012 Rule 14.3': {
+                'desc': 'Controlling expressions shall not be invariant (always true or always false).',
+                'solution': 'Review the logic to ensure the condition can realistically change, or remove the redundant condition/code.'
+            },
+            'MISRA C:2012 Rule 17.1': {
+                'desc': 'The features of <stdarg.h> shall not be used.',
+                'solution': 'Avoid variadic functions. Use explicit parameter passing or specialized functions instead.'
+            },
+            'MISRA C:2012 Rule 17.4': {
+                'desc': 'All exit paths from a function with non-void return type shall have an explicit return statement.',
+                'solution': 'Add a return statement for all logical branches, including default cases and error paths.'
+            },
+            'MISRA C:2012 Rule 18.1': {
+                'desc': 'A pointer resulting from arithmetic on a pointer operand shall address an element of the same array as that pointer operand.',
+                'solution': 'Perform bounds checking before pointer arithmetic or switch to indexed array access.'
+            },
+            'MISRA C:2012 Rule 21.6': {
+                'desc': 'The Standard Library input/output functions shall not be used.',
+                'solution': 'Use platform-specific safe I/O drivers or strictly validated wrappers instead of standard printf/scanf.'
+            },
+            'MISRA C:2012 Rule 22.1': {
+                'desc': 'All resources obtained dynamically by use of Standard Library functions shall be explicitly released.',
+                'solution': 'Ensure every malloc/calloc has a corresponding free call, preferably in a structured resource management pattern.'
+            }
+        }
+        return rule_info.get(rule_id, {
+            'desc': 'Detected MISRA guideline violation.',
+            'solution': 'Consult the MISRA C:2012 manual for specific remediation steps for this rule.'
+        })
+
     def _map_to_misra_rule(self, rule_id: str) -> str:
         """Map tool rule ID to MISRA rule"""
         rule_mapping = {
