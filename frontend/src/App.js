@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import '@/App.css';
 import { Upload, FileCheck, Loader2, Download, AlertCircle, CheckCircle2, Clock, FileText, Activity } from 'lucide-react';
@@ -16,7 +16,7 @@ function App() {
 
   useEffect(() => {
     loadAnalyses();
-  }, []);
+  }, [loadAnalyses]);
 
   useEffect(() => {
     if (analysisId && analysis?.status === 'running') {
@@ -25,16 +25,16 @@ function App() {
       }, 3000);
       return () => clearInterval(interval);
     }
-  }, [analysisId, analysis]);
+  }, [analysisId, analysis, checkAnalysisStatus]);
 
-  const loadAnalyses = async () => {
+  const loadAnalyses = useCallback(async () => {
     try {
       const response = await axios.get(`${API}/analyses`);
       setAnalyses(response.data);
     } catch (err) {
       console.error('Failed to load analyses:', err);
     }
-  };
+  }, []);
 
   const handleFileSelect = (e) => {
     const file = e.target.files[0];
@@ -73,7 +73,7 @@ function App() {
     }
   };
 
-  const checkAnalysisStatus = async (id) => {
+  const checkAnalysisStatus = useCallback(async (id) => {
     try {
       const response = await axios.get(`${API}/analysis/${id}`);
       setAnalysis(response.data);
@@ -84,7 +84,7 @@ function App() {
     } catch (err) {
       console.error('Failed to check status:', err);
     }
-  };
+  }, [loadAnalyses]);
 
   const downloadReport = async (id) => {
     try {
