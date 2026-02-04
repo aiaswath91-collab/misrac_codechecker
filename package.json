@@ -1,0 +1,25 @@
+{
+    "name": "misrac-analyzer",
+    "version": "1.0.0",
+    "description": "MISRA C:2012 Analysis Web Application",
+    "private": true,
+    "scripts": {
+        "install": "cd frontend && npm install --legacy-peer-deps",
+        "build": "cd frontend && npm run build",
+        "start": "cd frontend && npm start",
+        "deploy": "vercel --prod"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/yourusername/misrac-analyzer.git"
+    },
+    "keywords": [
+        "misra",
+        "c",
+        "static-analysis",
+        "code-quality",
+        "safety-critical"
+    ],
+    "author": "Your Name",
+    "license": "MIT"
+}
